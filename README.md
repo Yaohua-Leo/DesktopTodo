@@ -51,6 +51,8 @@
 
 构建脚本调用 Windows 自带的 .NET Framework C# 编译器，生成 `dist\DesktopTodo.exe`。界面 XAML 和图标嵌入 EXE；无需 NuGet 包或网络连接。界面测试需要可用的 Windows 桌面会话。
 
+**发布**：推送 `v*` 标签（如 `v1.0.1`）后，GitHub Actions 会自动构建 exe、运行存储测试并创建 Release（见 `.github/workflows/release.yml`）；带预发布号的标签（如 `v1.0.1-rc.1`）会标记为 pre-release。
+
 | 源文件 | 内容 |
 | --- | --- |
 | `App.cs` | 启动入口、单实例唤回、任务交互和窗口控制 |
