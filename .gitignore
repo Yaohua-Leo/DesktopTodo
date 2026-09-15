@@ -1,0 +1,17 @@
+# 构建产物
+dist/
+*.zip
+
+# 测试产物
+tests/bin/
+tests/data/
+tests/diagnosis/
+tests/*.exe
+test-data/
+test-data-border/
+test-build/
+
+# 本机辅助脚本（含本机路径，不入库）
+fix-desktoptodo-shortcut.ps1
+
+*.tmp
