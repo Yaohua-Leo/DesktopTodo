@@ -1,14 +1,55 @@
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="桌面待办" Width="392" Height="580" MinWidth="340" MinHeight="410"
+        Title="{Binding AppTitle}" Width="392" Height="580" MinWidth="340" MinHeight="410"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="CanResize" WindowStartupLocation="Manual"
-        FontFamily="Microsoft YaHei UI, Segoe UI" FontSize="13" Foreground="#303A36">
+        FontFamily="Microsoft YaHei UI, Segoe UI" FontSize="13" Foreground="{DynamicResource ThemeTextPrimary}">
   <Window.Resources>
-    <SolidColorBrush x:Key="Accent" Color="#3C7865"/>
+    <!-- Theme brushes. Defaults below are the Sage Light palette; the controller
+         overwrites every key when a theme is applied, and DynamicResource picks
+         the change up. Keep these keys in sync with ThemePalette's fields. -->
+    <SolidColorBrush x:Key="ThemeCardBg" Color="#FFFEFB"/>
+    <SolidColorBrush x:Key="ThemeCardBorder" Color="#E2E8E0"/>
+    <Color x:Key="ThemeCardShadow">#354A3D</Color>
+    <SolidColorBrush x:Key="ThemeGlassHighlight" Color="Transparent"/>
+    <SolidColorBrush x:Key="ThemeTextPrimary" Color="#303A36"/>
+    <SolidColorBrush x:Key="ThemeTextSoft" Color="#6F7D72"/>
+    <SolidColorBrush x:Key="ThemeTextSecondary" Color="#8A958D"/>
+    <SolidColorBrush x:Key="ThemeTextMuted" Color="#9BA595"/>
+    <SolidColorBrush x:Key="ThemeAccent" Color="#3C7865"/>
+    <SolidColorBrush x:Key="ThemeAccentHover" Color="#2D6351"/>
+    <SolidColorBrush x:Key="ThemeAccentFocus" Color="#214F40"/>
+    <SolidColorBrush x:Key="ThemeAccentForeground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ThemeAccentSoft" Color="#EAF2EC"/>
+    <SolidColorBrush x:Key="ThemeAccentSoftBorder" Color="#D5E5D9"/>
+    <SolidColorBrush x:Key="ThemeAccentHoverBorder" Color="#87A991"/>
+    <SolidColorBrush x:Key="ThemeAccentText" Color="#56755E"/>
+    <SolidColorBrush x:Key="ThemeButtonFg" Color="#66736C"/>
+    <SolidColorBrush x:Key="ThemeIconMuted" Color="#8C9890"/>
+    <SolidColorBrush x:Key="ThemeHoverSurface" Color="#EDF2EE"/>
+    <SolidColorBrush x:Key="ThemeFocusSurface" Color="#DFEBE3"/>
+    <SolidColorBrush x:Key="ThemeInputBg" Color="#F4F6F0"/>
+    <SolidColorBrush x:Key="ThemeInputBorder" Color="#E1E7DC"/>
+    <SolidColorBrush x:Key="ThemeSeparator" Color="#EAF0E6"/>
+    <SolidColorBrush x:Key="ThemeToastBg" Color="#EEF3EB"/>
+    <SolidColorBrush x:Key="ThemeProgressBg" Color="#EDF1E8"/>
+    <SolidColorBrush x:Key="ThemeProgressFg" Color="#9EB796"/>
+    <SolidColorBrush x:Key="ThemeCircleStroke" Color="#ABB8AF"/>
+    <SolidColorBrush x:Key="ThemeDoneGray" Color="#8D9891"/>
+    <SolidColorBrush x:Key="ThemeOverdue" Color="#C0504D"/>
+    <SolidColorBrush x:Key="ThemeDueToday" Color="#3C7865"/>
+    <SolidColorBrush x:Key="ThemeMarkerRed" Color="#C0504D"/>
+    <SolidColorBrush x:Key="ThemePinBg" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ThemePinBorder" Color="#E2E7E1"/>
+    <SolidColorBrush x:Key="ThemeDisabledGray" Color="#A5AEA7"/>
+    <SolidColorBrush x:Key="ThemeEmptyArtBg" Color="#F0F4EB"/>
+    <SolidColorBrush x:Key="ThemeEmptyArtBorder" Color="#BBCBB8"/>
+    <SolidColorBrush x:Key="ThemeEmptyArtCheck" Color="#70966D"/>
+    <SolidColorBrush x:Key="ThemeEmptyArtLine" Color="#D2DFCB"/>
+    <SolidColorBrush x:Key="ThemeFillerText" Color="#B8C0B6"/>
     <Style x:Key="ButtonBase" TargetType="Button">
       <Setter Property="Cursor" Value="Hand"/>
-      <Setter Property="Foreground" Value="#66736C"/>
+      <Setter Property="Foreground" Value="{DynamicResource ThemeButtonFg}"/>
       <Setter Property="Background" Value="Transparent"/>
       <Setter Property="BorderThickness" Value="0"/>
       <Setter Property="Padding" Value="8,6"/>
@@ -19,8 +60,8 @@
               <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
             <ControlTemplate.Triggers>
-              <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Surface" Property="Background" Value="#EDF2EE"/></Trigger>
-              <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Surface" Property="Background" Value="#DFEBE3"/></Trigger>
+              <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Surface" Property="Background" Value="{DynamicResource ThemeHoverSurface}"/></Trigger>
+              <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Surface" Property="Background" Value="{DynamicResource ThemeFocusSurface}"/></Trigger>
               <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.4"/></Trigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
@@ -35,12 +76,12 @@
         <Setter.Value>
           <ControlTemplate TargetType="CheckBox">
             <Grid Width="32" Height="34" Background="Transparent">
-              <Ellipse x:Name="Circle" Width="20" Height="20" Stroke="#ABB8AF" StrokeThickness="1.5" Fill="Transparent"/>
-              <Path x:Name="Tick" Data="M 10,17 L 14,21 L 22,12" Stroke="White" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Visibility="Collapsed"/>
+              <Ellipse x:Name="Circle" Width="20" Height="20" Stroke="{DynamicResource ThemeCircleStroke}" StrokeThickness="1.5" Fill="Transparent"/>
+              <Path x:Name="Tick" Data="M 10,17 L 14,21 L 22,12" Stroke="{DynamicResource ThemeAccentForeground}" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Visibility="Collapsed"/>
             </Grid>
             <ControlTemplate.Triggers>
-              <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Circle" Property="Stroke" Value="#3C7865"/><Setter TargetName="Circle" Property="Fill" Value="#E9F2EB"/></Trigger>
-              <Trigger Property="IsChecked" Value="True"><Setter TargetName="Circle" Property="Fill" Value="#3C7865"/><Setter TargetName="Circle" Property="Stroke" Value="#3C7865"/><Setter TargetName="Tick" Property="Visibility" Value="Visible"/></Trigger>
+              <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Circle" Property="Stroke" Value="{DynamicResource ThemeAccent}"/><Setter TargetName="Circle" Property="Fill" Value="{DynamicResource ThemeAccentSoft}"/></Trigger>
+              <Trigger Property="IsChecked" Value="True"><Setter TargetName="Circle" Property="Fill" Value="{DynamicResource ThemeAccent}"/><Setter TargetName="Circle" Property="Stroke" Value="{DynamicResource ThemeAccent}"/><Setter TargetName="Tick" Property="Visibility" Value="Visible"/></Trigger>
               <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Circle" Property="StrokeThickness" Value="3"/></Trigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
@@ -49,113 +90,269 @@
     </Style>
     <Style x:Key="PinStyle" TargetType="ToggleButton">
       <Setter Property="Cursor" Value="Hand"/>
-      <Setter Property="Foreground" Value="#68736C"/>
+      <Setter Property="Foreground" Value="{DynamicResource ThemeButtonFg}"/>
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="ToggleButton">
-            <Border x:Name="PinSurface" CornerRadius="13" BorderBrush="#E2E7E1" BorderThickness="1" Background="White" Padding="11,6">
+            <Border x:Name="PinSurface" CornerRadius="13" BorderBrush="{DynamicResource ThemePinBorder}" BorderThickness="1" Background="{DynamicResource ThemePinBg}" Padding="11,6">
               <StackPanel Orientation="Horizontal">
                 <Path Data="M 4,0 L 12,0 M 6,0 L 6,6 L 3,9 L 13,9 L 10,6 L 10,0 M 8,9 L 8,14" Stroke="{TemplateBinding Foreground}" StrokeThickness="1.2" Width="16" Height="14" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                <TextBlock Text="固定到桌面" FontSize="11"/>
-                <Ellipse x:Name="PinDot" Width="5" Height="5" Fill="#A5AEA7" Margin="7,0,0,0"/>
+                <TextBlock Text="{Binding PinLabel}" FontSize="11"/>
+                <Ellipse x:Name="PinDot" Width="5" Height="5" Fill="{DynamicResource ThemeDisabledGray}" Margin="7,0,0,0"/>
               </StackPanel>
             </Border>
             <ControlTemplate.Triggers>
-              <Trigger Property="IsChecked" Value="True"><Setter Property="Foreground" Value="#3C7865"/><Setter TargetName="PinSurface" Property="Background" Value="#EAF2EC"/><Setter TargetName="PinSurface" Property="BorderBrush" Value="#D5E5D9"/><Setter TargetName="PinDot" Property="Fill" Value="#3C7865"/></Trigger>
-              <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="PinSurface" Property="BorderBrush" Value="#87A991"/></Trigger>
-              <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="PinSurface" Property="BorderBrush" Value="#3C7865"/></Trigger>
+              <Trigger Property="IsChecked" Value="True"><Setter Property="Foreground" Value="{DynamicResource ThemeAccent}"/><Setter TargetName="PinSurface" Property="Background" Value="{DynamicResource ThemeAccentSoft}"/><Setter TargetName="PinSurface" Property="BorderBrush" Value="{DynamicResource ThemeAccentSoftBorder}"/><Setter TargetName="PinDot" Property="Fill" Value="{DynamicResource ThemeAccent}"/></Trigger>
+              <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="PinSurface" Property="BorderBrush" Value="{DynamicResource ThemeAccentHoverBorder}"/></Trigger>
+              <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="PinSurface" Property="BorderBrush" Value="{DynamicResource ThemeAccent}"/></Trigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
         </Setter.Value>
       </Setter>
     </Style>
+    <DataTemplate x:Key="CalendarCellTemplate">
+      <Button Command="{Binding SelectCommand}" ToolTip="{Binding ToolTipText}" Padding="0" Margin="1" Cursor="Hand" AutomationProperties.Name="{Binding AutomationLabel}">
+        <Button.Template>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="Cell" Background="{Binding SelectionBrush}" BorderBrush="{Binding TodayBorderBrush}" BorderThickness="1.5" CornerRadius="6" MinHeight="26">
+              <StackPanel>
+                <TextBlock x:Name="DayText" Text="{Binding DayLabel}" Foreground="{Binding LabelBrush}" FontSize="11" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Height="10">
+                  <Ellipse Width="4" Height="4" Fill="{DynamicResource ThemeAccent}" Visibility="{Binding DotVisibility}" Margin="0,1,1,0"/>
+                  <Ellipse Width="4" Height="4" Fill="{DynamicResource ThemeMarkerRed}" Visibility="{Binding HolidayMarkVisibility}" Margin="0,1,1,0"/>
+                  <TextBlock Text="{Binding CountLabel}" FontSize="8" Foreground="{DynamicResource ThemeAccent}" Visibility="{Binding DotVisibility}"/>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Cell" Property="Opacity" Value="0.75"/></Trigger>
+              <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.4"/></Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Button.Template>
+      </Button>
+    </DataTemplate>
     <DataTemplate x:Key="TaskTemplate">
       <Border x:Name="TaskSurface" Padding="6,9" Margin="0,0,0,5" CornerRadius="10" Background="Transparent">
         <Grid>
-          <Grid.ColumnDefinitions><ColumnDefinition Width="36"/><ColumnDefinition Width="*"/><ColumnDefinition Width="28"/></Grid.ColumnDefinitions>
-          <CheckBox Style="{StaticResource CircleCheck}" IsChecked="{Binding IsCompleted, Mode=TwoWay}" ToolTip="完成 / 恢复待办" AutomationProperties.Name="{Binding CheckLabel}"/>
-          <TextBlock x:Name="TaskLabel" Grid.Column="1" Text="{Binding Text}" TextWrapping="Wrap" VerticalAlignment="Center" Margin="6,6,6,6" FontSize="14" Cursor="IBeam" ToolTip="双击编辑；右键可编辑或删除">
-            <TextBlock.InputBindings><MouseBinding MouseAction="LeftDoubleClick" Command="{Binding EditCommand}"/></TextBlock.InputBindings>
-            <TextBlock.ContextMenu><ContextMenu><MenuItem Header="编辑任务" Command="{Binding EditCommand}"/><MenuItem Header="删除任务" Command="{Binding DeleteCommand}"/></ContextMenu></TextBlock.ContextMenu>
-          </TextBlock>
-          <Button x:Name="Delete" Grid.Column="2" Command="{Binding DeleteCommand}" Opacity="0" Width="26" Height="28" Padding="6" VerticalAlignment="Top" Margin="0,3,0,0" ToolTip="删除任务" AutomationProperties.Name="{Binding DeleteLabel}">
-            <Path Data="M 2,2 L 12,12 M 12,2 L 2,12" Stroke="#8C9890" StrokeThickness="1.3"/>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="36"/><ColumnDefinition Width="*"/><ColumnDefinition Width="28"/><ColumnDefinition Width="28"/></Grid.ColumnDefinitions>
+          <CheckBox Style="{StaticResource CircleCheck}" IsChecked="{Binding IsCompleted, Mode=TwoWay}" ToolTip="{Binding DataContext.TaskDoneHint, RelativeSource={RelativeSource AncestorType=Window}}" AutomationProperties.Name="{Binding CheckLabel}"/>
+          <StackPanel Grid.Column="1" Margin="6,2,6,2" VerticalAlignment="Center">
+            <TextBlock x:Name="TaskLabel" Text="{Binding Text}" TextWrapping="Wrap" FontSize="14" Cursor="IBeam" ToolTip="{Binding DataContext.TaskTextHint, RelativeSource={RelativeSource AncestorType=Window}}">
+              <TextBlock.InputBindings><MouseBinding MouseAction="LeftDoubleClick" Command="{Binding EditCommand}"/></TextBlock.InputBindings>
+              <TextBlock.ContextMenu><ContextMenu><MenuItem Header="{Binding DataContext.TaskMenuEdit, RelativeSource={RelativeSource AncestorType=Window}}" Command="{Binding EditCommand}"/><MenuItem Header="{Binding DataContext.TaskMenuDue, RelativeSource={RelativeSource AncestorType=Window}}" Command="{Binding PickDueCommand}"/><MenuItem Header="{Binding DataContext.TaskMenuDelete, RelativeSource={RelativeSource AncestorType=Window}}" Command="{Binding DeleteCommand}"/></ContextMenu></TextBlock.ContextMenu>
+            </TextBlock>
+            <TextBlock x:Name="DueLabel" Text="{Binding DueText}" FontSize="10" Foreground="{Binding DueBrush}" Visibility="{Binding DueVisibility}"/>
+          </StackPanel>
+          <Button x:Name="Due" Grid.Column="2" Command="{Binding PickDueCommand}" Opacity="0" Width="26" Height="28" Padding="5" VerticalAlignment="Top" Margin="0,3,0,0" ToolTip="{Binding DataContext.TaskDueHint, RelativeSource={RelativeSource AncestorType=Window}}" AutomationProperties.Name="{Binding DuePickerLabel}">
+            <TextBlock Text="📅" FontSize="12"/>
+          </Button>
+          <Button x:Name="Delete" Grid.Column="3" Command="{Binding DeleteCommand}" Opacity="0" Width="26" Height="28" Padding="6" VerticalAlignment="Top" Margin="0,3,0,0" ToolTip="{Binding DataContext.TaskDeleteHint, RelativeSource={RelativeSource AncestorType=Window}}" AutomationProperties.Name="{Binding DeleteLabel}">
+            <Path Data="M 2,2 L 12,12 M 12,2 L 2,12" Stroke="{DynamicResource ThemeIconMuted}" StrokeThickness="1.3"/>
           </Button>
         </Grid>
       </Border>
       <DataTemplate.Triggers>
-        <DataTrigger Binding="{Binding IsCompleted}" Value="True"><Setter TargetName="TaskLabel" Property="TextDecorations" Value="Strikethrough"/><Setter TargetName="TaskLabel" Property="Foreground" Value="#8D9891"/></DataTrigger>
-        <Trigger SourceName="TaskSurface" Property="IsMouseOver" Value="True"><Setter TargetName="TaskSurface" Property="Background" Value="#F1F5F0"/><Setter TargetName="Delete" Property="Opacity" Value="1"/></Trigger>
-        <Trigger SourceName="TaskSurface" Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="Delete" Property="Opacity" Value="1"/></Trigger>
+        <DataTrigger Binding="{Binding IsCompleted}" Value="True"><Setter TargetName="TaskLabel" Property="TextDecorations" Value="Strikethrough"/><Setter TargetName="TaskLabel" Property="Foreground" Value="{DynamicResource ThemeDoneGray}"/><Setter TargetName="DueLabel" Property="TextDecorations" Value="Strikethrough"/></DataTrigger>
+        <Trigger SourceName="TaskSurface" Property="IsMouseOver" Value="True"><Setter TargetName="TaskSurface" Property="Background" Value="{DynamicResource ThemeHoverSurface}"/><Setter TargetName="Delete" Property="Opacity" Value="1"/><Setter TargetName="Due" Property="Opacity" Value="1"/></Trigger>
+        <Trigger SourceName="TaskSurface" Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="Delete" Property="Opacity" Value="1"/><Setter TargetName="Due" Property="Opacity" Value="1"/></Trigger>
       </DataTemplate.Triggers>
     </DataTemplate>
   </Window.Resources>
-  <Border Margin="12" Background="#FFFEFB" CornerRadius="20" BorderBrush="#E2E8E0" BorderThickness="1">
-    <Border.Effect><DropShadowEffect Color="#354A3D" BlurRadius="20" ShadowDepth="4" Opacity="0.16"/></Border.Effect>
+  <Border x:Name="CardRoot" Margin="12" Background="{DynamicResource ThemeCardBg}" CornerRadius="20" BorderBrush="{DynamicResource ThemeCardBorder}" BorderThickness="1">
+    <Border.Effect><DropShadowEffect Color="{DynamicResource ThemeCardShadow}" BlurRadius="20" ShadowDepth="4" Opacity="0.16"/></Border.Effect>
     <Grid Margin="20,14,20,16">
-      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-      <Grid x:Name="DragHeader" Background="Transparent" Cursor="SizeAll" ToolTip="按住这里拖动卡片">
+      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+      <Border Grid.RowSpan="9" VerticalAlignment="Top" Height="14" Margin="24,-6,24,0" CornerRadius="8" Background="{DynamicResource ThemeGlassHighlight}" IsHitTestVisible="False"/>
+      <Grid x:Name="DragHeader" Background="Transparent" Cursor="SizeAll" ToolTip="{Binding DragHint}">
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" IsHitTestVisible="False">
-          <Border Background="#E7EFE6" Width="26" Height="26" CornerRadius="8" Margin="0,0,9,0"><Path Data="M 6,13 L 10,17 L 20,8" Stroke="#3C7865" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/></Border>
-          <TextBlock Text="桌面待办" Foreground="#6F7D72" FontSize="11" VerticalAlignment="Center"/>
+          <Border Background="{DynamicResource ThemeAccentSoft}" Width="26" Height="26" CornerRadius="8" Margin="0,0,9,0"><Path Data="M 6,13 L 10,17 L 20,8" Stroke="{DynamicResource ThemeAccent}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/></Border>
+          <TextBlock Text="{Binding AppTitle}" Foreground="{DynamicResource ThemeTextSoft}" FontSize="11" VerticalAlignment="Center"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Cursor="Arrow">
-          <Button x:Name="MinimizeButton" Width="28" Height="28" Padding="8" ToolTip="最小化" AutomationProperties.Name="最小化"><Path Data="M 0,6 L 12,6" Stroke="#7B887E" StrokeThickness="1.3"/></Button>
-          <Button x:Name="CloseButton" Width="28" Height="28" Padding="8" ToolTip="关闭（任务自动保存）" AutomationProperties.Name="关闭"><Path Data="M 1,1 L 11,11 M 11,1 L 1,11" Stroke="#7B887E" StrokeThickness="1.3"/></Button>
+          <Button x:Name="ThemeButton" Width="28" Height="28" Padding="7" ToolTip="{Binding ThemeHint}" AutomationProperties.Name="{Binding ThemeHint}">
+            <Grid Width="14" Height="14">
+              <Ellipse Width="8" Height="8" Fill="{DynamicResource ThemeAccent}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+              <Ellipse Width="8" Height="8" Fill="{DynamicResource ThemeMarkerRed}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+              <Ellipse Width="8" Height="8" Fill="{DynamicResource ThemeDueToday}" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+            </Grid>
+          </Button>
+          <Button x:Name="MinimizeButton" Width="28" Height="28" Padding="8" ToolTip="{Binding MinimizeHint}" AutomationProperties.Name="{Binding MinimizeHint}"><Path Data="M 0,6 L 12,6" Stroke="{DynamicResource ThemeIconMuted}" StrokeThickness="1.3"/></Button>
+          <Button x:Name="CloseButton" Width="28" Height="28" Padding="8" ToolTip="{Binding CloseHint}" AutomationProperties.Name="{Binding CloseHint}"><Path Data="M 1,1 L 11,11 M 11,1 L 1,11" Stroke="{DynamicResource ThemeIconMuted}" StrokeThickness="1.3"/></Button>
         </StackPanel>
       </Grid>
       <Grid Grid.Row="1" Margin="3,23,3,0">
         <StackPanel>
-          <TextBlock Text="我的待办" FontSize="26" FontWeight="SemiBold"/>
-          <TextBlock Text="{Binding DateLabel}" Foreground="#8A958D" FontSize="11" Margin="0,7,0,0"/>
+          <TextBlock Text="{Binding HeadingText}" FontSize="26" FontWeight="SemiBold"/>
+          <TextBlock Text="{Binding DateLabel}" Foreground="{DynamicResource ThemeTextSecondary}" FontSize="11" Margin="0,7,0,0"/>
         </StackPanel>
-        <Border HorizontalAlignment="Right" VerticalAlignment="Center" Background="#EEF3EB" CornerRadius="10" Padding="10,7"><TextBlock Text="{Binding RemainingLabel}" Foreground="#56755E" FontSize="11"/></Border>
+        <Border HorizontalAlignment="Right" VerticalAlignment="Center" Background="{DynamicResource ThemeToastBg}" CornerRadius="10" Padding="10,7"><TextBlock Text="{Binding RemainingLabel}" Foreground="{DynamicResource ThemeAccentText}" FontSize="11"/></Border>
       </Grid>
-      <Grid Grid.Row="2" Margin="3,18,3,15">
-        <ToggleButton x:Name="PinButton" Style="{StaticResource PinStyle}" HorizontalAlignment="Left" IsChecked="{Binding IsPinned, Mode=TwoWay}" ToolTip="{Binding PinHint}" AutomationProperties.Name="固定到桌面"/>
-        <TextBlock Text="一件一件，慢慢完成" Foreground="#9BA397" FontSize="10" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+      <Grid Grid.Row="2" Margin="3,18,3,10">
+        <ToggleButton x:Name="PinButton" Style="{StaticResource PinStyle}" HorizontalAlignment="Left" IsChecked="{Binding IsPinned, Mode=TwoWay}" ToolTip="{Binding PinHint}" AutomationProperties.Name="{Binding PinLabel}"/>
+        <TextBlock Text="{Binding SubtitleText}" Foreground="{DynamicResource ThemeTextMuted}" FontSize="10" HorizontalAlignment="Right" VerticalAlignment="Center"/>
       </Grid>
-      <Grid x:Name="ListRegion" Grid.Row="3" ClipToBounds="True">
-        <Border BorderBrush="#EAF0E6" BorderThickness="0,1,0,0"/>
+      <Grid Grid.Row="3" Margin="3,0,3,0">
+        <Button Command="{Binding ToggleCalendarCommand}" HorizontalAlignment="Left" Padding="6,3" ToolTip="{Binding CalendarBarTooltip}" AutomationProperties.Name="{Binding CalendarBarTooltip}">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Text="{Binding CalendarChevron}" FontSize="11" Foreground="{DynamicResource ThemeTextSecondary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+            <TextBlock Text="📅" FontSize="12" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBlock Text="{Binding CalendarBarTitle}" FontSize="11" Foreground="{DynamicResource ThemeTextSoft}" VerticalAlignment="Center"/>
+          </StackPanel>
+        </Button>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Visibility="{Binding CalendarVisibility}">
+          <Button Content="{Binding InvertLabel}" Command="{Binding ToggleLightModeCommand}" FontSize="10" Padding="6,2" Margin="0,0,4,0" Foreground="{DynamicResource ThemeTextMuted}" Visibility="{Binding InvertVisibility}" ToolTip="{Binding InvertTooltip}" AutomationProperties.Name="{Binding InvertTooltip}"/>
+          <Button Content="{Binding CalendarModeSwitchLabel}" Command="{Binding ToggleCalendarModeCommand}" FontSize="10" Padding="6,2" Foreground="{DynamicResource ThemeTextMuted}" ToolTip="{Binding CalendarModeTooltip}" AutomationProperties.Name="{Binding CalendarModeTooltip}"/>
+        </StackPanel>
+      </Grid>
+      <Border Grid.Row="4" Visibility="{Binding CalendarVisibility}" Margin="0,4,0,0">
+        <StackPanel>
+          <Grid Margin="3,2,3,0">
+            <Button Content="‹" Command="{Binding PrevMonthCommand}" HorizontalAlignment="Left" Width="26" Padding="4,1" FontSize="13" ToolTip="{Binding PrevMonthHint}" AutomationProperties.Name="{Binding PrevMonthHint}"/>
+            <TextBlock Text="{Binding CalendarTitle}" HorizontalAlignment="Center" FontSize="12" Foreground="{DynamicResource ThemeAccentText}" VerticalAlignment="Center"/>
+            <Button Content="›" Command="{Binding NextMonthCommand}" HorizontalAlignment="Right" Width="26" Padding="4,1" FontSize="13" ToolTip="{Binding NextMonthHint}" AutomationProperties.Name="{Binding NextMonthHint}"/>
+          </Grid>
+          <ItemsControl ItemsSource="{Binding WeekHeaders}" Margin="0,6,0,0">
+            <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="7"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate><TextBlock Text="{Binding}" FontSize="9" Foreground="{DynamicResource ThemeTextMuted}" HorizontalAlignment="Center"/></DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <ItemsControl ItemsSource="{Binding CalendarDays}" ItemTemplate="{StaticResource CalendarCellTemplate}" Margin="0,2,0,0">
+            <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="7"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+          </ItemsControl>
+          <Border BorderBrush="{DynamicResource ThemeSeparator}" BorderThickness="0,1,0,0" Margin="0,4,0,0" Visibility="{Binding SelectedDayVisibility}">
+            <StackPanel Margin="3,6,3,0">
+              <TextBlock Text="{Binding SelectedDayTitle}" FontSize="11" Foreground="{DynamicResource ThemeAccentText}"/>
+              <ScrollViewer MaxHeight="104" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding SelectedDayTasks}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Grid Margin="0,3,0,0">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <CheckBox Style="{StaticResource CircleCheck}" IsChecked="{Binding IsCompleted, Mode=TwoWay}" ToolTip="{Binding DataContext.TaskDoneHint, RelativeSource={RelativeSource AncestorType=Window}}" AutomationProperties.Name="{Binding CheckLabel}"/>
+                        <TextBlock x:Name="DayTaskLabel" Grid.Column="1" Text="{Binding Text}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="2" Text="{Binding DueText}" FontSize="10" Foreground="{Binding DueBrush}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                      </Grid>
+                      <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IsCompleted}" Value="True"><Setter TargetName="DayTaskLabel" Property="TextDecorations" Value="Strikethrough"/><Setter TargetName="DayTaskLabel" Property="Foreground" Value="{DynamicResource ThemeDoneGray}"/></DataTrigger>
+                      </DataTemplate.Triggers>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Border>
+      <Grid x:Name="ListRegion" Grid.Row="5" ClipToBounds="True">
+        <Border BorderBrush="{DynamicResource ThemeSeparator}" BorderThickness="0,1,0,0"/>
         <ScrollViewer x:Name="TaskScroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="-3,12,-5,8" Padding="0,0,4,0" CanContentScroll="False">
           <ItemsControl ItemsSource="{Binding Tasks}" ItemTemplate="{StaticResource TaskTemplate}" IsEnabled="{Binding CanEditTasks}"/>
         </ScrollViewer>
         <StackPanel Visibility="{Binding EmptyVisibility}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,8" IsHitTestVisible="False">
           <Grid x:Name="EmptyArt" Width="72" Height="76" Margin="0,0,0,12">
-            <Ellipse Fill="#F0F4EB" Width="68" Height="68"/>
-            <Border Width="40" Height="48" CornerRadius="8" Background="#FFFEFB" BorderBrush="#BBCBB8" BorderThickness="1.2" RenderTransformOrigin="0.5,0.5"><Border.RenderTransform><RotateTransform Angle="-8"/></Border.RenderTransform><StackPanel Margin="10,12,8,0"><Path Data="M 0,3 L 3,6 L 8,0" Stroke="#70966D" StrokeThickness="1.4"/><Border Background="#D2DFCB" Height="2" Margin="0,8,0,0"/><Border Background="#D2DFCB" Height="2" Margin="0,6,5,0"/></StackPanel></Border>
+            <Ellipse Fill="{DynamicResource ThemeEmptyArtBg}" Width="68" Height="68"/>
+            <Border Width="40" Height="48" CornerRadius="8" Background="{DynamicResource ThemeCardBg}" BorderBrush="{DynamicResource ThemeEmptyArtBorder}" BorderThickness="1.2" RenderTransformOrigin="0.5,0.5"><Border.RenderTransform><RotateTransform Angle="-8"/></Border.RenderTransform><StackPanel Margin="10,12,8,0"><Path Data="M 0,3 L 3,6 L 8,0" Stroke="{DynamicResource ThemeEmptyArtCheck}" StrokeThickness="1.4"/><Border Background="{DynamicResource ThemeEmptyArtLine}" Height="2" Margin="0,8,0,0"/><Border Background="{DynamicResource ThemeEmptyArtLine}" Height="2" Margin="0,6,5,0"/></StackPanel></Border>
           </Grid>
-          <TextBlock Text="给今天一个小小的开始" FontSize="14" HorizontalAlignment="Center" Foreground="#65765E"/>
-          <TextBlock Text="在下方写下你的第一件待办" FontSize="11" HorizontalAlignment="Center" Foreground="#9CA594" Margin="0,9,0,0"/>
+          <TextBlock Text="{Binding EmptyTitle}" FontSize="14" HorizontalAlignment="Center" Foreground="{DynamicResource ThemeAccentText}"/>
+          <TextBlock Text="{Binding EmptyHint}" FontSize="11" HorizontalAlignment="Center" Foreground="{DynamicResource ThemeTextMuted}" Margin="0,9,0,0"/>
         </StackPanel>
       </Grid>
-      <Border Grid.Row="4" Visibility="{Binding ToastVisibility}" Background="#EEF3EB" CornerRadius="8" Padding="10,5" Margin="0,0,0,8">
-        <DockPanel><Button DockPanel.Dock="Right" Content="撤销" Command="{Binding UndoCommand}" Visibility="{Binding UndoVisibility}" Foreground="#3C7865" FontSize="11" Padding="5,3"/><TextBlock Text="{Binding ToastText}" VerticalAlignment="Center" FontSize="11" TextWrapping="Wrap"/></DockPanel>
+      <Border Grid.Row="6" Visibility="{Binding ToastVisibility}" Background="{DynamicResource ThemeToastBg}" CornerRadius="8" Padding="10,5" Margin="0,0,0,8">
+        <DockPanel><Button DockPanel.Dock="Right" Content="{Binding UndoLabel}" Command="{Binding UndoCommand}" Visibility="{Binding UndoVisibility}" Foreground="{DynamicResource ThemeAccent}" FontSize="11" Padding="5,3"/><TextBlock Text="{Binding ToastText}" VerticalAlignment="Center" FontSize="11" TextWrapping="Wrap"/></DockPanel>
       </Border>
-      <Border x:Name="InputBorder" Grid.Row="5" Background="#F4F6F0" BorderBrush="#E1E7DC" BorderThickness="1" CornerRadius="12" Padding="12,9,7,9">
+      <Border x:Name="InputBorder" Grid.Row="7" Background="{DynamicResource ThemeInputBg}" BorderBrush="{DynamicResource ThemeInputBorder}" BorderThickness="1" CornerRadius="12" Padding="12,9,7,9">
         <Grid>
           <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="36"/></Grid.ColumnDefinitions>
-          <TextBlock Text="{Binding InputHint}" Foreground="#9BA595" VerticalAlignment="Center" IsHitTestVisible="False" Visibility="{Binding PlaceholderVisibility}" Margin="2,0,0,0"/>
-          <TextBox x:Name="TaskInput" Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}" Background="Transparent" Foreground="#354939" BorderThickness="0" VerticalContentAlignment="Center" Padding="1,4" MaxLength="2000" FontSize="13" AutomationProperties.Name="待办内容"/>
+          <TextBlock Text="{Binding InputHint}" Foreground="{DynamicResource ThemeTextMuted}" VerticalAlignment="Center" IsHitTestVisible="False" Visibility="{Binding PlaceholderVisibility}" Margin="2,0,0,0"/>
+          <TextBox x:Name="TaskInput" Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}" Background="Transparent" Foreground="{DynamicResource ThemeTextPrimary}" BorderThickness="0" VerticalContentAlignment="Center" Padding="1,4" MaxLength="2000" FontSize="13" AutomationProperties.Name="{Binding InputHint}"/>
           <Button x:Name="AddButton" Grid.Column="1" Command="{Binding AddCommand}" Width="32" Height="32" Padding="0" ToolTip="{Binding AddHint}" AutomationProperties.Name="{Binding AddHint}">
-            <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="AddSurface" Background="#3C7865" CornerRadius="9"><TextBlock Text="{Binding AddGlyph}" Foreground="White" FontSize="23" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="AddSurface" Property="Background" Value="#2D6351"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="AddSurface" Property="Background" Value="#214F40"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter TargetName="AddSurface" Property="Opacity" Value="0.45"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+            <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="AddSurface" Background="{DynamicResource ThemeAccent}" CornerRadius="9"><TextBlock Text="{Binding AddGlyph}" Foreground="{DynamicResource ThemeAccentForeground}" FontSize="23" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="AddSurface" Property="Background" Value="{DynamicResource ThemeAccentHover}"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="AddSurface" Property="Background" Value="{DynamicResource ThemeAccentFocus}"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter TargetName="AddSurface" Property="Opacity" Value="0.45"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
           </Button>
         </Grid>
       </Border>
-      <StackPanel Grid.Row="6" Margin="3,14,3,0">
+      <StackPanel Grid.Row="8" Margin="3,14,3,0">
         <Grid>
-          <TextBlock Text="{Binding ProgressLabel}" Foreground="#7F8D7B" FontSize="10" VerticalAlignment="Center"/>
-          <Button Content="清除已完成" Command="{Binding ClearCompletedCommand}" HorizontalAlignment="Right" Padding="0,2" FontSize="10" Foreground="#8A9685"/>
+          <TextBlock Text="{Binding ProgressLabel}" Foreground="{DynamicResource ThemeTextSecondary}" FontSize="10" VerticalAlignment="Center"/>
+          <Button Content="{Binding ClearCompletedLabel}" Command="{Binding ClearCompletedCommand}" HorizontalAlignment="Right" Padding="0,2" FontSize="10" Foreground="{DynamicResource ThemeTextMuted}"/>
         </Grid>
-        <ProgressBar Value="{Binding CompletedPercent, Mode=OneWay}" Maximum="100" Height="3" BorderThickness="0" Background="#EDF1E8" Foreground="#9EB796" Margin="0,8,0,0"/>
+        <ProgressBar Value="{Binding CompletedPercent, Mode=OneWay}" Maximum="100" Height="3" BorderThickness="0" Background="{DynamicResource ThemeProgressBg}" Foreground="{DynamicResource ThemeProgressFg}" Margin="0,8,0,0"/>
         <DockPanel Margin="0,9,0,0">
-          <Button DockPanel.Dock="Right" Content="重新读取" Command="{Binding ReloadCommand}" FontSize="9" Padding="4,0" Margin="5,0,0,0" ToolTip="{Binding DataLocationHint}" AutomationProperties.Name="重新读取任务"/>
+          <Button DockPanel.Dock="Right" Content="{Binding ReloadLabel}" Command="{Binding ReloadCommand}" FontSize="9" Padding="4,0" Margin="5,0,0,0" ToolTip="{Binding DataLocationHint}" AutomationProperties.Name="{Binding ReloadLabel}"/>
           <TextBlock Text="{Binding SaveStatus}" Foreground="{Binding SaveStatusColor}" FontSize="9" TextWrapping="Wrap" ToolTip="{Binding DataLocationHint}"/>
         </DockPanel>
       </StackPanel>
-      <Thumb x:Name="ResizeHandle" Grid.RowSpan="7" Width="16" Height="16" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-10,-8" Cursor="SizeNWSE" ToolTip="拖动调整卡片大小" AutomationProperties.Name="调整卡片大小">
-        <Thumb.Template><ControlTemplate TargetType="Thumb"><Grid Background="Transparent"><Path Data="M 4,12 L 12,4 M 8,12 L 12,8" Stroke="#B8C4B3" StrokeThickness="1.3" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/></Grid></ControlTemplate></Thumb.Template>
+      <Thumb x:Name="ResizeHandle" Grid.RowSpan="9" Width="16" Height="16" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-10,-8" Cursor="SizeNWSE" ToolTip="{Binding ResizeHint}" AutomationProperties.Name="{Binding ResizeHint}">
+        <Thumb.Template><ControlTemplate TargetType="Thumb"><Grid Background="Transparent"><Path Data="M 4,12 L 12,4 M 8,12 L 12,8" Stroke="{DynamicResource ThemeFillerText}" StrokeThickness="1.3" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/></Grid></ControlTemplate></Thumb.Template>
       </Thumb>
+      <Popup x:Name="DuePickerPopup" Grid.RowSpan="9" StaysOpen="False" AllowsTransparency="True" Placement="Center" PlacementTarget="{Binding ElementName=CardRoot}">
+        <Border DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=Popup}}" Background="{DynamicResource ThemeCardBg}" BorderBrush="{DynamicResource ThemeCardBorder}" BorderThickness="1" CornerRadius="14" Padding="16,12,16,10" Width="300">
+          <Border.Effect><DropShadowEffect Color="{DynamicResource ThemeCardShadow}" BlurRadius="18" ShadowDepth="3" Opacity="0.18"/></Border.Effect>
+          <StackPanel>
+            <TextBlock Text="{Binding PickerTitle}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+            <Grid Margin="0,8,0,0">
+              <Button Content="‹" Command="{Binding PickerPrevMonthCommand}" HorizontalAlignment="Left" Width="24" Padding="4,0" FontSize="12"/>
+              <TextBlock Text="{Binding PickerMonthTitle}" HorizontalAlignment="Center" FontSize="11" Foreground="{DynamicResource ThemeAccentText}" VerticalAlignment="Center"/>
+              <Button Content="›" Command="{Binding PickerNextMonthCommand}" HorizontalAlignment="Right" Width="24" Padding="4,0" FontSize="12"/>
+            </Grid>
+            <ItemsControl ItemsSource="{Binding WeekHeaders}" Margin="0,4,0,0">
+              <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="7"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate><TextBlock Text="{Binding}" FontSize="9" Foreground="{DynamicResource ThemeTextMuted}" HorizontalAlignment="Center"/></DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <ItemsControl ItemsSource="{Binding PickerDays}" ItemTemplate="{StaticResource CalendarCellTemplate}">
+              <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="7"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+            </ItemsControl>
+            <TextBlock Text="{Binding PickerCurrentDue}" FontSize="10" Foreground="{DynamicResource ThemeTextSecondary}" Margin="0,8,0,4"/>
+            <Border Background="{DynamicResource ThemeInputBg}" CornerRadius="8" Padding="4">
+              <ItemsControl ItemsSource="{Binding PickerHours}">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="6"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Button Content="{Binding}" Command="{Binding DataContext.SetDueHourCommand, RelativeSource={RelativeSource AncestorType=Popup}}" CommandParameter="{Binding}" IsEnabled="{Binding DataContext.PickerHoursEnabled, RelativeSource={RelativeSource AncestorType=Popup}}" Margin="1" FontSize="10" Padding="3,2"/>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Border>
+            <Button Content="{Binding ClearDueLabel}" Command="{Binding ClearDueCommand}" HorizontalAlignment="Right" FontSize="10" Margin="0,8,0,0" Padding="4,1" Foreground="{DynamicResource ThemeTextMuted}"/>
+          </StackPanel>
+        </Border>
+      </Popup>
+      <Popup x:Name="ThemePopup" Grid.RowSpan="9" StaysOpen="False" AllowsTransparency="True" Placement="Center" PlacementTarget="{Binding ElementName=CardRoot}">
+        <Border DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=Popup}}" Background="{DynamicResource ThemeCardBg}" BorderBrush="{DynamicResource ThemeCardBorder}" BorderThickness="1" CornerRadius="14" Padding="16,12,16,12" Width="300">
+          <Border.Effect><DropShadowEffect Color="{DynamicResource ThemeCardShadow}" BlurRadius="18" ShadowDepth="3" Opacity="0.18"/></Border.Effect>
+          <StackPanel>
+            <TextBlock Text="{Binding ThemeGalleryTitle}" FontSize="13" FontWeight="SemiBold"/>
+            <ItemsControl ItemsSource="{Binding ThemeCards}" Margin="0,6,0,0">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Button Command="{Binding DataContext.SelectThemeCommand, RelativeSource={RelativeSource AncestorType=Popup}}" CommandParameter="{Binding Family}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="4" Margin="0,1" AutomationProperties.Name="{Binding Name}">
+                    <Grid>
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="52"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                      <Border Width="46" Height="30" CornerRadius="7" Background="{Binding PreviewBg}" BorderBrush="{Binding PreviewBorder}" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                          <Ellipse Width="8" Height="8" Fill="{Binding PreviewAccent}"/>
+                          <Ellipse Width="8" Height="8" Fill="{Binding PreviewHeat}" Margin="4,0,0,0"/>
+                        </StackPanel>
+                      </Border>
+                      <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="12" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="{DynamicResource ThemeTextPrimary}"/>
+                      <TextBlock Grid.Column="2" Text="✓" FontSize="13" Foreground="{DynamicResource ThemeAccent}" VerticalAlignment="Center" Visibility="{Binding CheckVisibility}"/>
+                    </Grid>
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Border BorderBrush="{DynamicResource ThemeSeparator}" BorderThickness="0,1,0,0" Margin="0,8,0,0"/>
+            <UniformGrid Columns="3" Margin="0,8,0,0">
+              <Button Content="{Binding ModeFollowLabel}" Command="{Binding SetLightDarkModeCommand}" CommandParameter="follow" Background="{Binding ModeFollowBg}" FontSize="10" Padding="4,4" Margin="0,0,4,0" AutomationProperties.Name="{Binding ModeFollowLabel}"/>
+              <Button Content="{Binding ModeLightLabel}" Command="{Binding SetLightDarkModeCommand}" CommandParameter="light" Background="{Binding ModeLightBg}" FontSize="10" Padding="4,4" Margin="2,0"/>
+              <Button Content="{Binding ModeDarkLabel}" Command="{Binding SetLightDarkModeCommand}" CommandParameter="dark" Background="{Binding ModeDarkBg}" FontSize="10" Padding="4,4" Margin="4,0,0,0"/>
+            </UniformGrid>
+          </StackPanel>
+        </Border>
+      </Popup>
     </Grid>
   </Border>
 </Window>

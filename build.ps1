@@ -15,7 +15,7 @@ $arguments = @('/nologo', '/target:winexe', '/platform:anycpu', '/optimize+', '/
 $icon = Join-Path $projectRoot 'App.ico'
 $arguments += '/reference:System.Web.Extensions.dll'
 if (Test-Path -LiteralPath $icon) { $arguments += "/win32icon:$icon"; $arguments += "/resource:$icon,App.ico" }
-$arguments += @((Join-Path $projectRoot 'App.cs'), (Join-Path $projectRoot 'Storage.cs'))
+$arguments += @((Join-Path $projectRoot 'App.cs'), (Join-Path $projectRoot 'Storage.cs'), (Join-Path $projectRoot 'Logic.cs'), (Join-Path $projectRoot 'Localization.cs'), (Join-Path $projectRoot 'Holidays.cs'), (Join-Path $projectRoot 'Theme.cs'))
 & $compiler @arguments
 if ($LASTEXITCODE -ne 0) { throw "Compilation failed ($LASTEXITCODE)." }
 $guide = Join-Path $projectRoot '使用说明.txt'

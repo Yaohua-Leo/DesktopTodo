@@ -14,4 +14,10 @@ test-build/
 # 本机辅助脚本（含本机路径，不入库）
 fix-desktoptodo-shortcut.ps1
 
+# 构建/测试日志
+.*-log.txt
+
+# WorkBuddy 工作日志（本机私有，不入库）
+.workbuddy/
+
 *.tmp
