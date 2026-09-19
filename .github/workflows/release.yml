@@ -23,11 +23,10 @@ jobs:
         run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./tests/run-storage-tests.ps1
 
       # UI 集成测试（734 断言）需要窗口/Dispatcher；GitHub Windows runner 的
-      # session-0 桌面通常可以承载进程内 WPF 测试。首次在 CI 实跑验证通过前，
-      # 设为 continue-on-error，避免环境差异阻塞发版；确认稳定后改为阻塞。
-      - name: Run UI tests (non-blocking until verified on CI)
+      # session-0 桌面可以承载进程内 WPF 测试。已在 v1.1.0 的 CI 实跑验证通过，
+      # 自此作为阻塞步骤：失败即中止构建，不发 Release。
+      - name: Run UI tests
         run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./tests/run-ui-tests.ps1
-        continue-on-error: true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
