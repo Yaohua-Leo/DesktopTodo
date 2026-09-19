@@ -4,6 +4,8 @@
 
 **下载**：在 [Releases](https://github.com/Yaohua-Leo/DesktopTodo/releases/latest) 页面下载 `DesktopTodo.exe`，双击即可运行（单文件、免安装）。
 
+**更新到新版本**：先退出正在运行的旧版（托盘图标右键 → 退出），再用新版 `DesktopTodo.exe` 覆盖旧文件后运行。任务数据保存在独立的数据目录（见下文），与程序文件位置无关，更新不会丢失。若不退出旧版直接双击新版，程序会唤醒旧版窗口而不是运行新版。
+
 自行构建时，双击 `dist\DesktopTodo.exe` 运行。
 
 ## 使用方法
