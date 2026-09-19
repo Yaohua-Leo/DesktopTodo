@@ -63,6 +63,16 @@ namespace DesktopTodo
                             if (stream != null) window.Icon = BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
                         var controller = new TodoController(window, directory);
                         app.MainWindow = window;
+                        // Closing the HWND through the taskbar or Alt+F4 destroys the
+                        // window and (via the Closed handler) the tray icon, but with
+                        // OnExplicitShutdown nothing would ever end the dispatcher
+                        // loop: the process survived as a windowless, iconless zombie.
+                        // Any real close of the main window therefore ends the app;
+                        // the tray Exit path lands here too (Shutdown is idempotent).
+                        window.Closed += delegate
+                        {
+                            if (Application.Current != null) Application.Current.Shutdown();
+                        };
                         var registration = ThreadPool.RegisterWaitForSingleObject(signal, delegate
                         {
                             app.Dispatcher.BeginInvoke(new Action(delegate { controller.ShowFromTray(); }));

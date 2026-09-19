@@ -60,6 +60,7 @@ internal static class UiTests
             RunLanguageScenarios(Path.Combine(dataDirectory, "language"));
             RunThemeScenarios(Path.Combine(dataDirectory, "theme"));
             RunTrayHideShowScenarios(Path.Combine(dataDirectory, "tray-hide"));
+            RunWindowCloseExitScenario(Path.Combine(dataDirectory, "window-close-exit"));
             listener.Flush();
             Assert(bindingErrors.Length == 0, "no WPF data-binding errors: " + bindingErrors.ToString());
             Console.WriteLine("PASS: " + assertions + " UI integration assertions.");
@@ -455,6 +456,48 @@ internal static class UiTests
             }
         }
         finally { Environment.CurrentDirectory = previousDirectory; }
+    }
+
+    // A real process launched from the built exe, closed through its main window
+    // (the taskbar-close / Alt+F4 path), must actually terminate: before the
+    // window.Closed shutdown hook this left a windowless zombie process alive.
+    private static void RunWindowCloseExitScenario(string baseDirectory)
+    {
+        string appBinary = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "DesktopTodo.exe");
+        Assert(File.Exists(appBinary), "the app binary sits next to the test binary for the window-close exit probe");
+        string directory = Path.Combine(baseDirectory, "window-close-exit");
+        Directory.CreateDirectory(directory);
+        ProcessStartInfo start = new ProcessStartInfo(appBinary, "--data-dir \"" + directory + "\"");
+        start.WorkingDirectory = directory;
+        start.UseShellExecute = true;
+        using (Process child = Process.Start(start))
+        {
+            IntPtr handle = IntPtr.Zero;
+            DateTime deadline = DateTime.UtcNow.AddSeconds(15);
+            while (DateTime.UtcNow < deadline)
+            {
+                child.Refresh();
+                if (child.HasExited) throw new Exception("The app exited before showing its window.");
+                handle = child.MainWindowHandle;
+                if (handle != IntPtr.Zero) break;
+                WaitForDispatcher(TimeSpan.FromMilliseconds(200));
+            }
+            if (handle == IntPtr.Zero) { StopChildAndFail(child); return; }
+            Assert(SendMessage(handle, 0x0010, IntPtr.Zero, IntPtr.Zero) != IntPtr.Zero
+                || !child.HasExited, "WM_CLOSE was delivered to the main window");
+            if (!child.WaitForExit(15000))
+            {
+                child.Kill();
+                throw new Exception("FAIL: closing the main window must terminate the process (zombie regression).");
+            }
+            Assert(child.ExitCode == 0, "the window-close exit path returns a clean exit code");
+        }
+    }
+
+    private static void StopChildAndFail(Process child)
+    {
+        if (!child.HasExited) child.Kill();
+        throw new Exception("FAIL: the app never showed a main window handle within 15s.");
     }
 
     private static void RunDueScenarios(string directory)
