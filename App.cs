@@ -1850,7 +1850,9 @@ namespace DesktopTodo
                 FontFamily = new FontFamily("Microsoft YaHei UI, Segoe UI"),
                 FontSize = 13,
                 Foreground = ink,
-                Background = new SolidColorBrush(Color.FromRgb(0xFF, 0xFE, 0xFB))
+                // Follow the active palette like RestoreWindow does; the old
+                // near-white hardcode turned text invisible under dark themes.
+                Background = ThemeManager.Brush(palette.CardBg)
             };
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("App.ico"))
                 if (stream != null) dialog.Icon = BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
@@ -1892,9 +1894,9 @@ namespace DesktopTodo
                     stack.Children.Add(new TextBlock { Text = Strings.T(_language, "reminder.overdueTail", overdue.Count - overdueShown), Foreground = red, FontSize = 11, Margin = new Thickness(0, 5, 0, 0) });
             }
             StackPanel buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 16, 0, 0) };
-            Button show = new Button { Content = Strings.T(_language, "reminder.show"), Margin = new Thickness(0, 0, 8, 0), Padding = new Thickness(12, 5, 12, 5) };
+            Button show = new Button { Content = Strings.T(_language, "reminder.show"), Margin = new Thickness(0, 0, 8, 0), Padding = new Thickness(12, 5, 12, 5), Background = ThemeManager.Brush(palette.AccentSoft), Foreground = ThemeManager.Brush(palette.AccentText) };
             show.Click += delegate { ShowFromTray(); dialog.Close(); };
-            Button ok = new Button { Content = Strings.T(_language, "reminder.ok"), Padding = new Thickness(12, 5, 12, 5), Background = accent, Foreground = Brushes.White, BorderThickness = new Thickness(0) };
+            Button ok = new Button { Content = Strings.T(_language, "reminder.ok"), Padding = new Thickness(12, 5, 12, 5), Background = accent, Foreground = ThemeManager.Brush(palette.AccentForeground), BorderThickness = new Thickness(0) };
             ok.Click += delegate { dialog.Close(); };
             buttons.Children.Add(show);
             buttons.Children.Add(ok);
