@@ -60,6 +60,7 @@ internal static class UiTests
             RunLanguageScenarios(Path.Combine(dataDirectory, "language"));
             RunThemeScenarios(Path.Combine(dataDirectory, "theme"));
             RunTrayHideShowScenarios(Path.Combine(dataDirectory, "tray-hide"));
+            RunSingleInstanceWakeScenario(Path.Combine(dataDirectory, "single-instance-wake"));
             RunWindowCloseExitScenario(Path.Combine(dataDirectory, "window-close-exit"));
             listener.Flush();
             Assert(bindingErrors.Length == 0, "no WPF data-binding errors: " + bindingErrors.ToString());
@@ -999,6 +1000,63 @@ internal static class UiTests
         window.Close();
         Pump(null);
         Assert(!window.IsLoaded, "closing the window still destroys it on the real exit path");
+        string wakeFailure = null;
+        try { controller.ShowFromTray(); }
+        catch (Exception error) { wakeFailure = error.GetType().Name + ": " + error.Message; }
+        Assert(wakeFailure == null, "a late tray wake on a closed window is ignored: " + wakeFailure);
+        Assert(!window.IsLoaded && !window.IsVisible, "a closed window remains closed after a late tray wake");
+    }
+
+    private static void RunSingleInstanceWakeScenario(string baseDirectory)
+    {
+        string appBinary = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "DesktopTodo.exe");
+        Assert(File.Exists(appBinary), "the app binary sits next to the test binary for the single-instance wake probe");
+        string directory = Path.Combine(baseDirectory, "same-data");
+        Directory.CreateDirectory(directory);
+        ProcessStartInfo firstStart = new ProcessStartInfo(appBinary, "--data-dir \"" + directory + "\"");
+        firstStart.WorkingDirectory = directory;
+        firstStart.UseShellExecute = false;
+        firstStart.CreateNoWindow = true;
+        using (Process first = Process.Start(firstStart))
+        {
+            IntPtr handle = IntPtr.Zero;
+            DateTime deadline = DateTime.UtcNow.AddSeconds(15);
+            while (DateTime.UtcNow < deadline)
+            {
+                first.Refresh();
+                if (first.HasExited) throw new Exception("The primary instance exited before the wake probe.");
+                handle = first.MainWindowHandle;
+                if (handle != IntPtr.Zero) break;
+                WaitForDispatcher(TimeSpan.FromMilliseconds(200));
+            }
+            if (handle == IntPtr.Zero) { StopChildAndFail(first); return; }
+
+            ProcessStartInfo secondStart = new ProcessStartInfo(appBinary, "--data-dir \"" + directory + "\"");
+            secondStart.WorkingDirectory = directory;
+            secondStart.UseShellExecute = false;
+            secondStart.CreateNoWindow = true;
+            using (Process second = Process.Start(secondStart))
+            {
+                if (!second.WaitForExit(15000))
+                {
+                    second.Kill();
+                    throw new Exception("The second instance did not exit after signaling the primary instance.");
+                }
+                Assert(second.ExitCode == 0, "a duplicate instance exits cleanly after signaling the primary instance");
+            }
+
+            first.Refresh();
+            Assert(!first.HasExited, "the primary instance remains alive after a duplicate launch");
+            Assert(first.MainWindowHandle != IntPtr.Zero, "the primary instance still owns its main window after wake");
+            if (SendMessage(first.MainWindowHandle, 0x0010, IntPtr.Zero, IntPtr.Zero) == IntPtr.Zero && first.HasExited)
+                throw new Exception("The primary instance did not accept the close message after the wake probe.");
+            if (!first.WaitForExit(15000))
+            {
+                first.Kill();
+                throw new Exception("The primary instance did not terminate after the wake probe.");
+            }
+            Assert(first.ExitCode == 0, "the primary instance exits cleanly after the wake probe");
+        }
     }
 
     private static int RunColdRead(string directory)

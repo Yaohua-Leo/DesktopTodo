@@ -26,6 +26,16 @@ namespace DesktopTodo
 {
     public static class Program
     {
+        private sealed class WakeState
+        {
+            public int ShutdownStarted;
+        }
+
+        private static bool IsShutdownStarted(WakeState state)
+        {
+            return Thread.VolatileRead(ref state.ShutdownStarted) != 0;
+        }
+
         [STAThread]
         public static int Main(string[] args)
         {
@@ -63,6 +73,7 @@ namespace DesktopTodo
                             if (stream != null) window.Icon = BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
                         var controller = new TodoController(window, directory);
                         app.MainWindow = window;
+                        var wakeState = new WakeState();
                         // Closing the HWND through the taskbar or Alt+F4 destroys the
                         // window and (via the Closed handler) the tray icon, but with
                         // OnExplicitShutdown nothing would ever end the dispatcher
@@ -71,11 +82,35 @@ namespace DesktopTodo
                         // the tray Exit path lands here too (Shutdown is idempotent).
                         window.Closed += delegate
                         {
+                            Interlocked.Exchange(ref wakeState.ShutdownStarted, 1);
                             if (Application.Current != null) Application.Current.Shutdown();
                         };
                         var registration = ThreadPool.RegisterWaitForSingleObject(signal, delegate
                         {
-                            app.Dispatcher.BeginInvoke(new Action(delegate { controller.ShowFromTray(); }));
+                            if (IsShutdownStarted(wakeState)
+                                || app.Dispatcher.HasShutdownStarted
+                                || app.Dispatcher.HasShutdownFinished)
+                                return;
+                            try
+                            {
+                                app.Dispatcher.BeginInvoke(new Action(delegate
+                                {
+                                    // A wake event can already be queued when the
+                                    // window starts closing. Re-check on the UI thread
+                                    // immediately before touching the Window.
+                                    if (IsShutdownStarted(wakeState)
+                                        || app.Dispatcher.HasShutdownStarted
+                                        || app.Dispatcher.HasShutdownFinished)
+                                        return;
+                                    controller.ShowFromTray();
+                                }));
+                            }
+                            catch (InvalidOperationException)
+                            {
+                                // Dispatcher shutdown can begin between the checks
+                                // above and BeginInvoke. The wake is already stale;
+                                // ignore it rather than raising on a ThreadPool thread.
+                            }
                         }, null, Timeout.Infinite, false);
                         try
                         {
@@ -533,6 +568,7 @@ namespace DesktopTodo
         private readonly List<System.Windows.Forms.ToolStripMenuItem> _themeModeItems = new List<System.Windows.Forms.ToolStripMenuItem>();
         private bool _syncingTrayMenu;
         private readonly List<KeyValuePair<int, TaskItem>> _undo = new List<KeyValuePair<int, TaskItem>>();
+        private int _windowClosing;
         private bool _ready;
         private bool _pinned;
         private bool _saveOk = true;
@@ -1022,14 +1058,23 @@ namespace DesktopTodo
             };
             window.Closing += delegate(object sender, CancelEventArgs e)
             {
+                // Block a queued tray wake while the Window is in its Closing phase.
+                // HideToTray never enters this phase, so a hidden card remains restorable.
+                Interlocked.Exchange(ref _windowClosing, 1);
                 _geometryTimer.Stop();
                 // A failed/empty startup must never save an empty list merely because
                 // the window closes. Only warn when this session has actual task edits.
                 bool saved = !_hasUnsavedTaskChanges && (!_repository.CanSave || _repository.HasExternalChanges) ? false : Save();
-                if (!saved && _hasUnsavedTaskChanges && MessageBox.Show(window, Strings.T(_language, "msgbox.unsaved"), Strings.T(_language, "msgbox.unsavedTitle"), MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) e.Cancel = true;
+                if (!saved && _hasUnsavedTaskChanges && MessageBox.Show(window, Strings.T(_language, "msgbox.unsaved"), Strings.T(_language, "msgbox.unsavedTitle"), MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                {
+                    // The close was canceled, so future tray wake events are valid again.
+                    Interlocked.Exchange(ref _windowClosing, 0);
+                    e.Cancel = true;
+                }
             };
             window.Closed += delegate
             {
+                Interlocked.Exchange(ref _windowClosing, 1);
                 _ready = false; _geometryTimer.Stop(); _toastTimer.Stop(); _dateTimer.Stop(); _refreshTimer.Stop(); _reminderTimer.Stop();
                 SystemEvents.UserPreferenceChanged -= OnSystemPreferenceChanged;
                 ThemeManager.Applied -= OnThemeApplied;
@@ -1357,6 +1402,13 @@ namespace DesktopTodo
 
         public void ShowFromTray()
         {
+            // IsVisible cannot distinguish a tray-hidden window from a closed one:
+            // HideToTray intentionally leaves IsVisible false while IsLoaded true.
+            if (Thread.VolatileRead(ref _windowClosing) != 0
+                || !_window.IsLoaded
+                || _window.Dispatcher.HasShutdownStarted
+                || _window.Dispatcher.HasShutdownFinished)
+                return;
             _window.Show();
             if (_window.WindowState == WindowState.Minimized) _window.WindowState = WindowState.Normal;
             _window.Activate();
